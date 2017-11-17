@@ -4,7 +4,7 @@ Determination (ASD) in Matlab
 
 - general method for regression problems with smooth weights
 - optimizes marginal likelihood for hyperparameters governing smoothness
-- returns MAP RF estimate and Bayesian confidence intervals
+- returns MAP estimate of RF, posterior confidence intervals, and confidence intervals on hyperparameters
 
 ### Original reference: ###
 [Sahani, M. & Linden, J. Evidence optimization techniques for estimating stimulus-response functions. *NIPS* (2003)](http://www.gatsby.ucl.ac.uk/~maneesh/papers/nips02-evidence.pdf).
