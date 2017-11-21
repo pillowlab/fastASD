@@ -3,7 +3,7 @@
 % Illustrates fast automatic smoothness determination (ASD) for a 
 % 1-dimensional (vector) receptive field (RF) sampled from the ASD prior
 
-% Run script 'setpaths.m' in parent directory before running
+% NOTE: Run script 'setpaths.m' in parent directory before running
 
 % Set prior distribution for filter vector
 nk = 1000; % number of filter coeffs (1D vector)
