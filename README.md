@@ -20,8 +20,8 @@ Determination (ASD) in Matlab
 Download
 ==========
 
-* **Download**:   zipped archive  [LNPfitting-master.zip](https://github.com/pillowlab/LNPfitting/archive/master.zip)
-* **Clone**: clone the repository from github: ```git clone git@github.com:pillowlab/LNPfitting.git```
+* **Download**:   zipped archive  [fastASD-master.zip](https://github.com/pillowlab/fastASD/archive/master.zip)
+* **Clone**: clone the repository from github: ```git clone git@github.com:pillowlab/fastASD.git```
 
 Getting started
 ===========
