@@ -73,3 +73,9 @@ fprintf('\nEvidence values:\n=================\n');
 fprintf('Standard ASD: %.2f\n', -asdstats.neglogEv);
 fprintf('Wellcond ASD1: %.2f\n', -asdstats_wc1.neglogEv);
 fprintf('Wellcond ASD2: %.2f\n', -asdstats_wc2.neglogEv);
+
+fprintf('\nLearned length scales:\n=================\n');
+fprintf('Standard ASD: %.2f\n', -asdstats.len);
+fprintf('Wellcond ASD1: %.2f\n', -asdstats_wc1.len);
+fprintf('Wellcond ASD2: %.2f\n', -asdstats_wc2.len);
+
