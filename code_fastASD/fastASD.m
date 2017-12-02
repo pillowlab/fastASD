@@ -52,8 +52,7 @@ nsevarmin = min(1,nsevarmax*.01); % var ridge regression residuals
 nsevarrange = [nsevarmin, nsevarmax];
 
 % Change of variables to tilde rho (which separates rho and length scale)
-trhorange = (2*pi)^(nkd/2)*rhorange.*[min(lrange), max(lrange).^nkd];
-
+trhorange = transformRho(rhorange,lrange,nkd,1);
 
 %% ========= Grid search for initial hyperparameters =============================
 
@@ -100,18 +99,19 @@ end
 if nargout > 1
     lhat = hprshat(1); % length scale
     trhohat = hprshat(2); % transformed rho param
-    rhohat = trhohat/(lhat*sqrt(2*pi)).^(nkd); % original rho param
-    Ajcb = [1 0 0;  % Jacobian of param remapping from trho to rho
-        (2*pi).^(nkd/2)*[nkd*lhat^(nkd-1)*rhohat, lhat^nkd], 0;
-        0 0 1]; 
+    nsevarhat = hprshat(3); % noise variance
+
+    % Transform tilde-rho parameter back to rho
+    [rhohat,J] = transformRho(trhohat,lhat,nkd,-1); % rho hyperparameter and Jacobian
+    Ajcb = blkdiag(J,1); % Jacobian of param remapping from trho to rho
     
     ASDstats.len = lhat;  % length scale hyperparameter
     ASDstats.rho = rhohat;  % rho hyperparameter
-    ASDstats.nsevar = hprshat(end); % noise variance
+    ASDstats.nsevar = nsevarhat; % noise variance
     ASDstats.H = Ajcb'*H*Ajcb;  % Hessian of hyperparameters
     ASDstats.ci = sqrt(diag(inv(ASDstats.H))); % 1SD posterior CI for hyperparams
     ASDstats.neglogEv = neglogEv; % negative log-evidence at solution
-        
+          
     % Compute diagonal of posterior covariance over filter coeffs
     ASDstats.Lpostdiag = kroncovdiag(Bfft,LpostFFT,Binds);
     

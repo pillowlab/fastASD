@@ -79,8 +79,7 @@ nsevarmin = min(1,nsevarmax*.01); % var ridge regression residuals
 nsevarrange = [nsevarmin, nsevarmax];
 
 % Change of variables to tilde rho (which separates rho and length scale)
-trhorange = sqrt(2*pi)*rhorange.*[min(lrange), max(lrange)];
-
+trhorange = transformRho(rhorange,lrange,1,1); % NOTE: assumes dim = 1
 
 %% ========= Diagonalize by converting to FFT basis  ==========
 
@@ -90,7 +89,7 @@ opt1 = opts;
 % Generate Fourier basis for each group of coeffs
 Bmats = cell(ngrp,1); % Fourier basis for each group
 wvecspergrp = cell(ngrp,1); % frequency vector for each group
-for jj = 1:ngrp;
+for jj = 1:ngrp
     opt1.nxcirc = opts.nxcirc(jj); % pass in ju
     [~,Bmats{jj},wvecspergrp{jj}] = mkcov_ASDfactored([minlen(jj);1],nkgrp(jj),opt1);
 end
@@ -159,7 +158,7 @@ if nargout > 1
     Ajcb = [eye(ngrp), zeros(ngrp,ngrp+1); ... % Jacobian for params
         a*[diag(rhohat), diag(lhat)], zeros(ngrp,1); ...
         zeros(1,ngrp*2), 1];
-
+    
     ASDstats.rho = rhohat;  % rho hyperparameter
     ASDstats.len = lhat;  % length scale hyperparameter
     ASDstats.nsevar = hprshat(end); % noise variance
