@@ -60,7 +60,7 @@ switch nd
         Bfft = Bmats{1};      % FFT matrix
         wwnrm = wwnrmvecs{1}; % normalized freqs squared
 
-    case 2,   % 1 stimulus dimension
+    case 2,   % 2 stimulus dimension
         nfreq = cellfun(@length,wwnrmvecs); % number of frequencies preserved for each dimension
         Cdiag = kron(cdiagvecs{2},cdiagvecs{1}); % diagonal for full space
         ii = Cdiag>1/condthresh; % indices to keep
@@ -68,7 +68,15 @@ switch nd
         % Compute outer product of basis vecs to get basis for 2D NUDFT
         Bfft = Bmats{1}(i1,:).*Bmats{2}(i2,:);
         wwnrm = [wwnrmvecs{1}(i1), wwnrmvecs{2}(i2)];
-        
+
+    case 3,   %  3 stimulus dimension
+        nfreq = cellfun(@length,wwnrmvecs); % number of frequencies preserved for each dimension
+        Cdiag = kron(cdiagvecs{3},(kron(cdiagvecs{2},cdiagvecs{1})));
+        ii = Cdiag>1/condthresh; % indices to keep
+        [i1,i2and3] = find(reshape(ii,nfreq')); % find indices
+        [i2, i3] = ind2sub(nfreq(2:3), i2and3);
+        Bfft = Bmats{1}(i1,:).*Bmats{2}(i2,:).*Bmats{3}(i3,:); % outer product
+        wwnrm = [wwnrmvecs{1}(i1), wwnrmvecs{2}(i2), wwnrmvecs{3}(i3)];
 end
 
 % Calculate stimulus sufficient stats in Fourier domain
