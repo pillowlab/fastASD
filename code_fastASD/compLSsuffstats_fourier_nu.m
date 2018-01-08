@@ -68,6 +68,7 @@ switch nd
         % Compute outer product of basis vecs to get basis for 2D NUDFT
         Bfft = Bmats{1}(i1,:).*Bmats{2}(i2,:);
         wwnrm = [wwnrmvecs{1}(i1), wwnrmvecs{2}(i2)];
+
     case 3,   %  3 stimulus dimension
         nfreq = cellfun(@length,wwnrmvecs); % number of frequencies preserved for each dimension
         Cdiag = kron(cdiagvecs{3},(kron(cdiagvecs{2},cdiagvecs{1})));
