@@ -17,11 +17,11 @@ function [transformedrho,J] = transformRho(rho,len,nD,direction)
 %          (inverse direction only)
 
 if direction == 1
-    % Forward direction
+    % Forward direction (rho to tilde-rho)
     transformedrho = rho.*((len*sqrt(2*pi)).^nD);
     
 elseif direction == -1
-    % Reverse direction (input variable "rho" is actually the transformed rho)
+    % Reverse direction (from tilde-rho to rho)
     
     transformedrho = rho./((len*sqrt(2*pi)).^nD);
 

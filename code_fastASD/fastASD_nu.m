@@ -1,7 +1,7 @@
-function [kest,ASDstats] = fastASDnu(x,y,xpos,minlens,nxcirc)
+function [kest,ASDstats] = fastASD_nu(x,y,xpos,minlens,nxcirc,do_aniso)
 % Fast automatic smoothness determination (ASD) for non-uniformly spaced weights
 %
-% [kest,ASDstats] = fastASD_2Dnu(x,y,xpos,minlen,nxcirc)
+% [kest,ASDstats] = fastASD_nu(x,y,xpos,minlen,nxcirc,do_aniso)
 %
 % Empirical Bayes estimate of regression coefficients under smoothing
 % ("squared exponential") prior, with maximum marginal likelihood estimate
@@ -13,10 +13,11 @@ function [kest,ASDstats] = fastASDnu(x,y,xpos,minlens,nxcirc)
 % INPUT:
 % -------
 %        x [nt x nx] - stimulus matrix (each row contains spatial stimulus at single time)
-%        y [nt x 1 ] - response vector
-%     xloc [nt x 1 ] - spatial location for each regression weight
-%   minlen [1 x 1] - minimum length scale (the larger, the faster)
-%   nxcirc [1 x 1] - circular boundary  (OPTIONAL)
+%        y [nt x 1]  - response vector
+%     xpos [nt x m]  - spatial location for each regression weight
+%  minlens [1 x 1] or [m x 1] - minimum length scale for each dimension (can be scalar)
+%   nxcirc [1 x 1]   - circular boundary  (OPTIONAL)
+% do_aniso [1 x 1]   - fit different length scale in each dimension
 %
 % OUTPUT:
 % --------
@@ -24,12 +25,14 @@ function [kest,ASDstats] = fastASDnu(x,y,xpos,minlens,nxcirc)
 %   ASDstats - struct with fitted hyperparameters, Hessian, posterior covariance
 %              and (finallY) kest sampled on a grid (if desired)
 
-
 %% ========= Parse inputs and initialize hyperparams =====================
 
 CONDTHRESH = 1e8;  % threshold for small eigenvalues
 if nargin < 5
     nxcirc = [];
+end
+if nargin < 6
+    do_aniso = false;
 end
 nkd = size(xpos,2); % number of filter dimension
 
@@ -57,10 +60,8 @@ nsevarmax = dd.yy/nsamps; % marginal variance of y
 nsevarmin = min(1,nsevarmax*.01); % var ridge regression residuals
 nsevarrange = [nsevarmin, nsevarmax];
 
-
 % Change of variables to tilde rho (which separates rho and length scale)
 trhorange = (2*pi)^(nkd/2)*rhorange.*[min(lrange), max(lrange)].^nkd;
-
 
 %% ========= Grid search for initial hyperparameters =============================
 
@@ -72,8 +73,7 @@ rnges = [lrange;trhorange;nsevarrange];
 [nllvals,gridpts] = grideval(ngrid,rnges,lfun);
 [hprs0,~] = argmin(nllvals,gridpts(:,1),gridpts(:,2),gridpts(:,3)); % find minimum
 
-
-%% ========== Optimize evidence using fmincon ======================================
+%% ========== Optimize evidence using fmincon ====================================
 
 LB = [min(minlens);1e-2; 1e-2];  % lower bounds
 UB = inf(3,1); % upper bounds
@@ -82,8 +82,22 @@ fminopts = optimset('gradobj','on','Hessian','on','display','off','algorithm','t
 
 hprshat = fmincon(lfun,hprs0,[],[],[],[],LB,UB,[],fminopts); % run optimization
 
+%% ========== If do_aniso, use iso solution as starting point ====================
 
-%% =====  compute posterior mean and covariance at maximizer of hyperparams =========
+if do_aniso
+    % Make handle for loss function, set initial value and bounds
+    lfun = @(prs)neglogev_ASDspectral_nD(prs,dd,wwnrm,CONDTHRESH);  % loss function
+    hprs_init = hprshat([ones(nkd,1);2;3]); % initial params from isotropic case
+    LB = [minlens(:); 1e-2; 1e-2];  % lower bounds
+    UB = inf(nkd+2,1); % upper bounds
+    fminopts = optimset('gradobj','on','Hessian','on','display','off',...
+        'algorithm','trust-region-reflective','maxfunevals',1000,'maxiter',1000);
+
+    % HessCheck(lfun,hprs_init);  % check grad & Hessian numerically
+    hprshat = fmincon(lfun,hprs_init,[],[],[],[],LB,UB,[],fminopts); % run optimization
+end
+
+%% ========= Compute posterior mean and covariance at maximizer of hyperparams ===
 
 % Compute Hessian and Fourier-domain support at posterior mode
 [neglogEv,~,H,muFFT,LpostFFT,ii] = lfun(hprshat);
@@ -101,13 +115,18 @@ end
 
 % Assemble summary statistics for output 
 if nargout > 1
-    lhat = hprshat(1); % length scale
-    trhohat = hprshat(2); % transformed rho param
-    rhohat = trhohat/(lhat*sqrt(2*pi)).^(nkd); % original rho param
-    Ajcb = [1 0 0;  % Jacobian of param remapping from trho to rho
-        (2*pi).^(nkd/2)*[nkd*lhat^(nkd-1)*rhohat, lhat^nkd], 0;
-        0 0 1]; 
-    
+    lhat = hprshat(1:end-2); % length scale
+    trhohat = hprshat(end-1); % transformed rho param
+    rhohat = trhohat/(prod(lhat)*sqrt(2*pi)).^(nkd);
+    if do_aniso
+        nkd0 = nkd;
+    else
+        nkd0 = 1;
+    end
+    Ajcb = [eye(nkd0), zeros(nkd0,2); % Jacobian of param remapping
+        (2*pi)^(nkd/2)*[lhat'*rhohat, prod(lhat)], 0; ...
+        zeros(1,nkd0+1), 1];
+
     ASDstats.len = lhat;  % length scale hyperparameter
     ASDstats.rho = rhohat;  % rho hyperparameter
     ASDstats.nsevar = hprshat(end); % noise variance
