@@ -7,7 +7,7 @@
 % Generate true filter vector k
 nks = [25 20];  % number of filter pixels along [cols, rows]
 nk = prod(nks); % total number of filter coeffs
-len = [3 5];  % length scale along each dimension
+len = [3 3];  % length scale along each dimension
 rho = 25;  % marginal prior variance
 
 % Generate factored ASD prior covariance matrix in Fourier domain
@@ -17,12 +17,12 @@ nf1 = length(cdiag1); % number of frequencies needed
 nf2 = length(cdiag2); 
 
 % Draw true regression coeffs 'k' by sampling from ASD prior 
-kh = sqrt(rho)*randn(nf1,nf2).*(sqrt(cdiag1)*sqrt(cdiag2)'); % Fourier-domain kernel
+kFourier = sqrt(rho)*randn(nf1,nf2).*(sqrt(cdiag1)*sqrt(cdiag2)'); % Fourier-domain kernel
 fprintf('Filter has: %d pixels, %d significant Fourier coeffs\n',nk,nf1*nf2);
 
 % Inverse Fourier transform
-kim = U1*(U2*kh')'; % convert to space domain (as 2D image )
-k = kim(:);  % as vector
+kimage = U1*(U2*kFourier')'; % convert to space domain (as 2D image )
+ktrue = kimage(:);  % true filter (as vector)
 
 % Make full covariance matrix (for inspection purposes only; will cause
 % out-of-memory error if filter dimensions too big!)
@@ -35,16 +35,16 @@ Cprior = rho*kron(C2,C1);
 nsamps = 500; % number of stimulus sample
 signse = 10;   % stdev of added noise
 x = gsmooth(randn(nk,nsamps),1)'; % stimulus (smooth)
-y = x*k + randn(nsamps,1)*signse;  % dependent variable 
+y = x*ktrue + randn(nsamps,1)*signse;  % dependent variable 
 
 % plot filter and examine noise level
 t = 1:nk;
 subplot(221);  % ------
 imagesc(Cprior);  title('prior covariance');
 subplot(223); % ------
-imagesc(kim); xlabel('index'); ylabel('filter coeff'); title('true filter');
+imagesc(kimage); xlabel('index'); ylabel('filter coeff'); title('true filter');
 subplot(224); % ------
-plot(x*k, x*k, 'k.', x*k, y, 'r.'); xlabel('noiseless y'); ylabel('observed y');
+plot(x*ktrue, x*ktrue, 'k.', x*ktrue, y, 'r.'); xlabel('noiseless y'); ylabel('observed y');
 
 %% Compute ridge regression estimate 
 fprintf('\n...Running ridge regression with fixed-point updates...\n');
@@ -90,7 +90,7 @@ fprintf('   rho: %5.1f  %5.1f (+/-%.1f)\n',rho(1),asdstats.rho,ci(2));
 fprintf('nsevar: %5.1f  %5.1f (+/-%.1f)\n',signse.^2,asdstats.nsevar,ci(3));
 
 % Compute errors
-err = @(khat)(sum((k-khat(:)).^2)); % Define error function
+err = @(khat)(sum((ktrue-khat(:)).^2)); % Define error function
 fprintf('\nErrors:\n------\n  Ridge = %7.2f\n  ASD2D = %7.2f\n\n', ...
      [err(kridge) err(kasd)]);
 % 

@@ -19,11 +19,11 @@ function [logEvidences,khats] = compLogEvidence_ASDmodel(x,y,dims,minlens,nxcirc
 %  logEvidences [nr x nl x nn] - tensor of log-evidences
 %         khats [n x nl x nr x nn] - MAP weight estimates at gridded hyperparam values
 
-CONDTHRESH = 1e8;  % threshold on condition number for pruning small eigenvalues of X^T X
+CONDTHRESH = 1e10;  % threshold on condition number for pruning small eigenvalues of X^T X
 
 % Parse inputs 
 if isempty(nxcirc)
-    nxcirc = ceil(max([dims(:)'+minlens(:)'*4;dims(:)'*1.25]))';
+    nxcirc = ceil(max([dims(:)'+minlens(:)'*6;dims(:)'*1.33]))';
 end
 nkd = length(dims); % number of filter dimension
 nktot = prod(dims);
