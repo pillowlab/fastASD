@@ -19,7 +19,7 @@ function [logEvidences,khats] = compLogEvidence_ASDmodel(x,y,dims,minlens,nxcirc
 %  logEvidences [nr x nl x nn] - tensor of log-evidences
 %         khats [n x nl x nr x nn] - MAP weight estimates at gridded hyperparam values
 
-CONDTHRESH = 1e10;  % threshold on condition number for pruning small eigenvalues of X^T X
+CONDTHRESH = 1e8;  % threshold on condition number for pruning small eigenvalues of X^T X
 
 % Parse inputs 
 if isempty(nxcirc)
