@@ -30,7 +30,6 @@ if (nargin < 5) || isempty(nxcirc)
                        dims(:)'*1.25]))';
 end
 
-
 nd = length(dims); % number of filter dimensions
 if length(minlens) == 1 % make vector out of minlens, if necessary
     minlens = repmat(minlens,nd,1);
@@ -55,11 +54,11 @@ fprintf('\n Total # Fourier coeffs represented: %d\n\n', prod(ncoeff));
 switch nd  
     % switch based on stimulus dimension
 
-    case 1, % 1 dimensional stimulus
+    case 1 % 1 dimensional stimulus
         wwnrm = (2*pi/nxcirc(1))^2*(wvecs{1}.^2); % normalized freqs squared
         ii = true(length(wwnrm),1)'; % indices to keep 
         
-    case 2, % 2 dimensional stimulus
+    case 2 % 2 dimensional stimulus
         
         % Form full frequency vector and see which to cut
         Cdiag = kron(cdiagvecs{2},cdiagvecs{1});
@@ -70,7 +69,7 @@ switch nd
         wwnrm = [(ww1(ii)*(2*pi/nxcirc(1))).^2 ...
             (ww2(ii)*(2*pi/nxcirc(2))).^2];
         
-    case 3, % 3 dimensional stimulus
+    case 3 % 3 dimensional stimulus
 
         Cdiag = kron(cdiagvecs{3},(kron(cdiagvecs{2},cdiagvecs{1})));
         ii = (Cdiag/max(Cdiag))>1/condthresh; % indices to keep
