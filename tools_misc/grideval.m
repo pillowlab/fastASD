@@ -20,8 +20,9 @@ function [fvals,gridvecs] = grideval(ngrid,gridranges,fptr)
 ndim = size(gridranges,1); % number of dimensions in grid
 gridvecs = zeros(ngrid,ndim);
 for jdim = 1:ndim
-    len = diff(gridranges(jdim,:)); % length of interval
-    endpts = gridranges(jdim,:)+len/(2*ngrid)*[1 -1]; % endpoints for grid
+    %len = diff(gridranges(jdim,:)); % length of interval
+    % endpts = gridranges(jdim,:)+len/(2*ngrid)*[1 -1]; % endpoints for grid
+    endpts = gridranges(jdim,:); %+[0 len]; % endpoints for grid
     gridvecs(:,jdim) = linspace(endpts(1),endpts(2),ngrid);
 end
 

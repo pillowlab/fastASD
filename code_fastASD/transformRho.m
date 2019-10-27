@@ -31,6 +31,7 @@ elseif direction == -1
     if nargout > 1
         J = [1 0;
             (2*pi).^(nD/2)*[nD*len^(nD-1)*transformedrho, len^nD]];
+        % suspected mistake: "transformedrho" in above expr should be "rho"
     end
     
 end

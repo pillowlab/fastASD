@@ -39,7 +39,7 @@ wwnrmtot = sum(wwnrm,2);
 % (This is just for initial grid search, w/ ranges set using crude heuristics)
 
 % lengthscale range
-lrange = [min(minlens),max(max(minlens)*3,max(dims)/4)];
+lrange = [min(minlens),max(max(minlens)*3,max(dims)/8)];
 
 % rho (marginal variance)
 rhomax = 2*(dd.yy./dd.nsamps)/mean(diag(dd.xx)); % ratio of output to input variance
